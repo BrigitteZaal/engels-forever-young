@@ -23,6 +23,7 @@ h2{font-size:13.5pt;margin:4mm 0 2mm}
 .head .nm{font-size:9.5pt;color:#6B5B4B;text-align:right;white-space:nowrap;padding-left:6mm}
 .tip{background:#FFF3D6;border-radius:4mm;padding:3mm 4mm;font-size:11pt;margin:3mm 0}
 table{width:100%;border-collapse:collapse}
+table.vb td,table.vb th{padding:.8mm 2mm;font-size:10.5pt;height:9mm}
 td,th{border:1.5px solid #2B2118;padding:1.4mm 3mm;vertical-align:middle;text-align:left}
 th{background:#F4EBDD;font-size:11pt}
 .wline{height:11mm}
@@ -49,7 +50,7 @@ th{background:#F4EBDD;font-size:11pt}
 </style>
 </head>
 <body>
-<div class="bar"><b>Printbladen voor Finn</b><span>A4, staand. Print alles, of kies in het printvenster de pagina's die je nodig hebt.</span><button onclick="print()">Printen</button><a href="Printbladen_Finn_Engels.pdf" download>Download als PDF</a><a href="index.html">Terug naar de oefen-website</a></div>
+<div class="bar"><b>Printbladen voor Finn</b><span>A4, staand. Print alles, of kies in het printvenster de pagina's die je nodig hebt.</span><button onclick="print()">Printen</button><a href="Printbladen_Finn_Forever_Young.pdf" download>Download als PDF</a><a href="index.html">Terug naar de oefen-website</a></div>
 <div id="pages"></div>
 <script src="data.js"></script>
 <script>
@@ -60,7 +61,7 @@ const pages = [];
 
 // 1 Planning
 pages.push(`${head('Mijn plan tot de toets', 'Vink af en kleur een ster. Elke dag minimaal 10 minuten. Begin met woorden lezen. 2 × = twee rondjes met pauze.', 1)}
-<table class="plan" style="font-size:11.5pt"><tr><th style="width:24mm">Dag</th><th>Wat ga ik doen?</th><th style="width:16mm">Tijd</th><th style="width:16mm">Klaar</th><th style="width:16mm">Ster</th></tr>
+<table class="plan" style="font-size:11.5pt"><tr><th style="width:24mm">Dag</th><th>Wat ga ik doen?</th><th style="width:22mm">Tijd</th><th style="width:16mm">Klaar</th><th style="width:16mm">Ster</th></tr>
 ${P.map(d => `<tr><td><b>${esc(d.day)}</b></td><td><b>${esc(d.title)}</b><br><span style="font-size:9.5pt">${d.tasks.map(t => esc(t.text)).join(' · ')}</span></td><td>${d.test ? 'toets' : d.r2 ? (d.r1 === d.r2 ? '2 × ' + d.r1 : d.r1 + ' + ' + d.r2) + ' min' : d.min + ' min'}</td><td style="text-align:center"><span class="chk"></span></td><td style="text-align:center"><span class="star">★</span></td></tr>`).join('')}
 </table>
 `);
@@ -74,13 +75,13 @@ pages.push(`${head('Woordkaartjes (2)', 'Spel: leg de kaartjes op een stapel. Le
 // 4 Vouwblad NL->EN
 const order1 = [3,0,7,12,5,9,20,1,15,18,8,22,4,13,17,2,10,21,6,14,19,11,16];
 pages.push(`${head('Vouwblad: Nederlands → Engels', 'Vouw de groene kolom (rechts) naar achteren. Schrijf het Engels op. Klaar? Vouw open en kijk na. Fout? Schrijf het nog 1 keer goed in de kolom "Nog 1 keer".', 4)}
-<table><tr><th style="width:38mm">Nederlands</th><th>Engels (zelf schrijven)</th><th style="width:40mm">Nog 1 keer</th><th class="fold" style="width:40mm">Antwoord</th></tr>
+<table class="vb"><tr><th style="width:46mm">Nederlands</th><th>Engels (zelf schrijven)</th><th style="width:34mm">Nog 1 keer</th><th class="fold" style="width:46mm">Antwoord</th></tr>
 ${order1.map(i => L.words[i]).map(w => `<tr><td>${esc(w.nl)}</td><td></td><td></td><td class="fold ans">${esc(w.en)}</td></tr>`).join('')}</table>`);
 
 // 5 Vouwblad EN->NL
 const order2 = [10,4,16,1,21,8,13,0,19,6,14,2,22,11,5,17,9,3,20,7,15,12,18];
 pages.push(`${head('Vouwblad: Engels → Nederlands', 'Zelfde spel, andere kant op. Lees het Engelse woord hardop voordat je het opschrijft.', 5)}
-<table><tr><th style="width:38mm">Engels</th><th>Nederlands (zelf schrijven)</th><th style="width:40mm">Nog 1 keer</th><th class="fold" style="width:40mm">Antwoord</th></tr>
+<table class="vb"><tr><th style="width:46mm">Engels</th><th>Nederlands (zelf schrijven)</th><th style="width:34mm">Nog 1 keer</th><th class="fold" style="width:46mm">Antwoord</th></tr>
 ${order2.map(i => L.words[i]).map(w => `<tr><td><b>${esc(w.en)}</b></td><td></td><td></td><td class="fold ans">${esc(w.nl)}</td></tr>`).join('')}</table>`);
 
 // 6 Zinnen

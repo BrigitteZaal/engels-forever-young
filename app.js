@@ -83,7 +83,7 @@ function level() { let i = 0; LEVELS.forEach((l, j) => { if (S.stars >= l[0]) i 
 function addStars(n) { const before = level().name; S.stars += n; $('#starCount').textContent = S.stars; const after = level(); if (after.name !== before) { setTimeout(() => { flash(`Nieuw niveau: ${after.name} ${after.ic}`); sWin(); confetti(); }, 300); } }
 
 const BADGES = [
-  { id: 'first', ic: '🥄', name: 'Eerste ronde', how: 'Maak je eerste oefenronde af' },
+  { id: 'first', ic: '🎧', name: 'Eerste ronde', how: 'Maak je eerste oefenronde af' },
   { id: 'g1', ic: '👶', name: 'Jong & oud-kenner', how: 'Alle woorden van Groep 1 in je platenkast' },
   { id: 'g2', ic: '🛋️', name: 'Doe-ding-baas', how: 'Alle woorden van Groep 2 in je platenkast' },
   { id: 'g3', ic: '🏠', name: 'Groot-mens-expert', how: 'Alle woorden van Groep 3 in je platenkast' },
@@ -670,7 +670,7 @@ function applySettings() {
   document.querySelectorAll('.seg').forEach(sg => sg.querySelectorAll('button').forEach(b => b.classList.toggle('on', S.settings[sg.dataset.k] === b.dataset.v)));
 }
 document.querySelectorAll('.seg').forEach(sg => sg.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; S.settings[sg.dataset.k] = b.dataset.v; save(); applySettings(); if (sg.dataset.k === 'rate') say('Hello Finn, this is my voice.'); }));
-$('#voiceSel').onchange = e => { S.settings.voice = e.target.value; save(); say('Hello Finn! Let\'s cook.'); };
+$('#voiceSel').onchange = e => { S.settings.voice = e.target.value; save(); say('Hello Finn! Let\'s practise together.'); };
 $('#setBtn').onclick = () => { loadVoices(); $('#settings').classList.add('on'); };
 $('#toSync').onclick = () => { $('#settings').classList.remove('on'); setTimeout(() => { const e = $('#sync'); if (e) e.scrollIntoView({ behavior: 'smooth' }); }, 200); };
 $('#closeSet').onclick = () => $('#settings').classList.remove('on');
