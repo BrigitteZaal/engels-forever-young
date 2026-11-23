@@ -238,6 +238,12 @@ function taskRow(t) {
   return `<div class="task ${done ? 'done' : ''}"><button class="chk" data-tick="${t.id}" aria-label="Afvinken">${done ? '✓' : ''}</button><span class="txt">${esc(t.text)}</span>
     <a class="btn ${done ? 'ghost' : 'leaf'} go" href="${goHash(t.go, t.id)}" ${t.go === 'print' ? `target="_blank" data-printtask="${t.id}"` : ''}>${done ? 'Nog eens' : 'Start'}</a></div>`;
 }
+function dayTasks(d) {
+  if (!d.tasks.some(t => t.r)) return d.tasks.map(taskRow).join('');
+  return [1, 2].map(r => { const ts = d.tasks.filter(t => (t.r || 1) === r); if (!ts.length) return '';
+    const m = r === 1 ? d.r1 : d.r2;
+    return `<div class="rnd"><span class="rnd-l">Oefenrondje ${r}</span>${m ? `<span class="small muted">± ${m} min</span>` : ''}</div>${ts.map(taskRow).join('')}`; }).join('');
+}
 function bindTicks() {
   app.querySelectorAll('[data-tick]').forEach(b => b.onclick = () => { const id = b.dataset.tick; S.done[id] = !S.done[id]; if (S.done[id]) { addStars(1); sOk(); } save(); checkBadges(); render(); });
   app.querySelectorAll('[data-printtask]').forEach(a => a.addEventListener('click', () => { S.done[a.dataset.printtask] = true; save(); setTimeout(render, 300); }));
@@ -254,7 +260,7 @@ function viewHome() {
       <p class="small" style="opacity:.9;margin:0">Toets Engels · Song 3, Lesson 2 · donderdag 3 december</p>
       <h1>Hoi Finn! Klaar om te oefenen?</h1>
       <div class="count">${countTxt}</div>
-      <p style="margin:.6em 0 0;max-width:30em">Elke dag een klein beetje. Zo zit alles op 3 december netjes in je hoofd.</p>
+      <p style="margin:.6em 0 0;max-width:30em">Elke dag minimaal 10 minuten. Zo zit alles op 3 december netjes in je hoofd.</p>
     </div>
     <div class="card">
       <div class="chef"><span class="lvl" aria-hidden="true">${lv.ic}</span><div style="flex:1"><div class="small muted">Jouw niveau</div><h2 style="margin:0">${lv.name}</h2></div><span class="pill">⭐ ${S.stars}</span></div>
@@ -265,9 +271,9 @@ function viewHome() {
   </div>
   ${d ? `<section class="card mission">
     <div class="row" style="justify-content:space-between"><h2 style="margin:0">Missie van vandaag · ${esc(d.day)}</h2>
-    <span class="tag ${d.test ? 'test' : d.rest ? 'rest' : d.busy ? 'busy' : ''}">${d.min ? `ongeveer ${d.min} min` : 'vrij'}</span></div>
+    <span class="tag ${d.test ? 'test' : d.rest ? 'rest' : d.busy ? 'busy' : ''}">${d.r2 ? `${d.r1 === d.r2 ? "2 × " + d.r1 : d.r1 + " + " + d.r2} min` : d.min ? `ongeveer ${d.min} min` : 'vrij'}</span></div>
     <h3 style="margin-top:8px">${esc(d.title)}</h3><p class="muted" style="margin:0">${esc(d.note)}</p>
-    ${d.tasks.map(taskRow).join('')}
+    ${dayTasks(d)}
     <button class="speak" style="margin-top:14px" id="readMission">🔊 Lees de missie voor</button>
   </section>` : `<section class="card"><h2>Super gedaan, Finn</h2><p>De toetsperiode is voorbij. Je kunt hier altijd nog oefenen.</p></section>`}
   ${missed.length ? `<section class="card"><h3>Inhalen? Mag, hoeft niet</h3><p class="small muted">Deze waren voor eerdere dagen. Kies er hooguit één extra.</p>${missed.map(taskRow).join('')}</section>` : ''}
@@ -283,11 +289,11 @@ function viewPlan() {
   setTab('plan');
   const t = todayStr();
   app.innerHTML = `<section><h1>Planning tot de toets</h1>
-  <p style="max-width:40em">Korte stukjes van 10 tot 20 minuten, zodat er ook tijd blijft voor huiswerk, dyslexie-oefeningen, oogtraining en voetbal. Op donderdag en vrijdag is het rustig. Lukt een dag niet? Schuif gewoon een dag op: de vrijdagen zijn ook inhaaldagen.</p>
+  <p style="max-width:40em">Elke dag minimaal 10 minuten Engels. Op sommige dagen doe je 2 rondjes van 10 minuten, met een pauze ertussen. Begin elke dag met <b>woorden lezen</b>: rustig kijken, hardop zeggen en afdekken. Pas daarna ga je spelen en typen. Lukt een rondje niet? Doe het dan bij het volgende rondje.</p>
   <div class="card" style="background:var(--sky-soft);border-color:var(--sky-soft)"><b>Tip voor ouders:</b> beste moment is een vast moment, bijvoorbeeld direct na het eten. Engels liever niet direct na de oogtraining of dyslexie-oefeningen; even pauze ertussen helpt. Hardop meelezen en samen de woorden laten voorlezen werkt goed.${window.Store.persistent ? '' : ' <br><b>Let op:</b> in deze online versie blijven vinkjes en sterren alleen bewaard zolang het tabblad open is. Gebruik de downloadversie om alles te bewaren, of vink af op Printblad 1.'}</div></section>
   <section class="grid">${PLAN.map(d => `<div class="day ${d.date === t ? 'today' : d.date < t ? 'past' : ''}">
-    <div><div class="d">${esc(d.day)}</div><span class="tag ${d.test ? 'test' : d.rest ? 'rest' : d.busy ? 'busy' : ''}">${d.test ? 'toets' : d.rest ? 'vrij' : d.busy ? 'kort' : d.min + ' min'}</span>${d.date === t ? '<div class="small" style="color:var(--tomato);font-weight:700;margin-top:4px">vandaag</div>' : ''}</div>
-    <div><h3 style="margin:0">${esc(d.title)}</h3><p class="small muted" style="margin:0">${esc(d.note)}</p>${d.tasks.map(taskRow).join('')}</div></div>`).join('')}</section>`;
+    <div><div class="d">${esc(d.day)}</div><span class="tag ${d.test ? 'test' : d.rest ? 'rest' : d.busy ? 'busy' : ''}">${d.test ? 'toets' : d.rest ? 'vrij' : d.r2 ? (d.r1 === d.r2 ? '2 × ' + d.r1 : d.r1 + ' + ' + d.r2) + ' min' : d.min + ' min'}</span>${d.date === t ? '<div class="small" style="color:var(--tomato);font-weight:700;margin-top:4px">vandaag</div>' : ''}</div>
+    <div><h3 style="margin:0">${esc(d.title)}</h3><p class="small muted" style="margin:0">${esc(d.note)}</p>${dayTasks(d)}</div></div>`).join('')}</section>`;
   bindTicks();
 }
 function viewModes() {
@@ -295,12 +301,14 @@ function viewModes() {
   const card = (h, ic, t, s) => `<a class="card mode" href="${h}"><span class="ic">${ic}</span><b>${t}</b><span class="small muted">${s}</span></a>`;
   app.innerHTML = `<section><h1>Kies een spel</h1><p class="muted">Woorden en grammatica leer je allebei de kanten op. Zinnen alleen van Engels naar Nederlands. Tip: zet de plaatjes uit met het knopje bovenaan het spel, want op de toets staan ze er ook niet bij.</p></section>
   ${L.groups.map(g => `<section><h2>${g.short}: ${g.name} <span class="small muted">${wordsFor(g.id).map(w => w.pic).join(' ')}</span></h2><div class="grid g3">
+    ${card('#play/read/' + g.id, '📖', 'Lees-lijst', 'Lezen, hardop zeggen, afdekken.')}
     ${card('#play/learn/' + g.id, '👀', 'Leer-kaarten', 'Kijken, luisteren, nazeggen.')}
     ${card('#play/listen/' + g.id, '🎧', 'Luister-spel', 'Hoor het woord en kies.')}
     ${card('#play/type/' + g.id + '/nl', '⌨️', 'Typ-tijger NL → EN', 'Schrijf het Engelse woord.')}
     ${card('#play/type/' + g.id + '/en', '✍️', 'Typ-tijger EN → NL', 'Schrijf het Nederlandse woord.')}
   </div></section>`).join('')}
   <section><h2>Alle woorden door elkaar</h2><div class="grid g3">
+    ${card('#play/read/all', '📖', 'Lees-lijst alle woorden', 'Alle 23 woorden lezen en afdekken.')}
     ${card('#play/listen/all', '🎧', 'Luister-mix', '10 woorden, vooral de lastige.')}
     ${card('#play/type/all/nl', '⌨️', 'Typ-mix NL → EN', '12 woorden.')}
     ${card('#play/type/all/en', '✍️', 'Typ-mix EN → NL', '12 woorden.')}
@@ -315,7 +323,7 @@ function viewModes() {
     ${card('#play/phrases/all/mix', '🔀', 'Zinnen-mix', 'Puzzelen en typen door elkaar.')}
   </div></section>
   <section><h2>Grammatica: can / have to</h2><div class="grid g3">
-    ${card('#play/gexplain', '💡', 'Uitleg', 'Eén ding of meer dingen?')}
+    ${card('#play/gexplain', '💡', 'Uitleg', 'Mag het, of moet het?')}
     ${card('#play/grammar', '🧠', 'Grammatica-spel', 'Kiezen, puzzelen en schrijven.')}
   </div></section>
   <section><h2>Toets-training</h2><div class="grid g3">
@@ -336,6 +344,25 @@ function viewShelf() {
 }
 
 // ---------- learn (flashcards) ----------
+function viewRead(g, tid) {
+  setTab('modes');
+  const ws = wordsFor(g); let hide = '';
+  const grp = L.groups.find(x => x.id === g);
+  const draw = () => {
+    app.innerHTML = `<div class="stage"><a href="#modes" class="small">← terug</a>
+    <div class="card" style="margin-top:10px"><h1>Lees-lijst${grp ? ': ' + esc(grp.short) : ''}</h1>
+    <div class="coach" style="margin-top:0"><span class="face">📖</span><div><b>Zo lees je de woorden in je hoofd:</b><br>1. Lees elk Engels woord hardop en kijk wat het betekent.<br>2. Dek het Nederlands af en zeg de betekenis. Daarna andersom.<br>3. Weet je er een niet? Tik op het woord. Dan zie je het weer.</div></div>
+    <div class="row" style="margin:12px 0"><button class="speak ${hide === 'nl' ? 'slow' : ''}" id="hNl">${hide === 'nl' ? '👁️ Laat Nederlands zien' : '🙈 Dek Nederlands af'}</button><button class="speak ${hide === 'en' ? 'slow' : ''}" id="hEn">${hide === 'en' ? '👁️ Laat Engels zien' : '🙈 Dek Engels af'}</button></div>
+    <table class="rl">${ws.map((w, i) => `<tr><td><button class="speak" data-say="${i}" aria-label="Hoor ${esc(w.en)}">🔊</button></td><td class="en ${hide === 'en' ? 'cov' : ''}" data-rev><b>${esc(w.en)}</b>${w.syl && w.syl !== w.en ? `<div class="small muted">${esc(w.syl)}</div>` : ''}</td><td class="nl ${hide === 'nl' ? 'cov' : ''}" data-rev>${esc(w.nl)}</td></tr>`).join('')}</table>
+    <div class="row" style="margin-top:18px"><button class="btn leaf" id="done">Ik heb alles gelezen ✓</button></div></div></div>`;
+    $('#hNl').onclick = () => { hide = hide === 'nl' ? '' : 'nl'; draw(); };
+    $('#hEn').onclick = () => { hide = hide === 'en' ? '' : 'en'; draw(); };
+    app.querySelectorAll('[data-say]').forEach(b => b.onclick = () => say(ws[+b.dataset.say].en));
+    app.querySelectorAll('[data-rev]').forEach(c => c.onclick = () => c.classList.toggle('cov'));
+    $('#done').onclick = () => finishSimple(ws.length, 'Lees-lijst', tid, '#play/learn/' + g, 'Nu de leer-kaarten?');
+  };
+  draw();
+}
 function viewLearn(g, tid) {
   setTab('modes');
   const ws = wordsFor(g); let i = 0, flipped = false;
@@ -627,6 +654,7 @@ function render() {
   if (p[0] === 'shelf') return viewShelf();
   if (p[0] === 'play') {
     if (p[1] === 'learn') return viewLearn(p[2] || 'g1', tid);
+    if (p[1] === 'read') return viewRead(p[2] || 'g1', tid);
     if (p[1] === 'plearn') return viewPLearn(tid, p[2]);
     if (p[1] === 'gexplain') return viewGExplain(tid);
     if (p[1] === 'grammar' && tid && !S.badges.seenGx) { S.badges.seenGx = 1; save(); return viewGExplain(tid); }

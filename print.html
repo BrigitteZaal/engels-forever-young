@@ -59,9 +59,9 @@ const head = (t, s, n) => `<div class="head"><div><h1>${t}</h1><p class="sub" st
 const pages = [];
 
 // 1 Planning
-pages.push(`${head('Mijn plan tot de toets', 'Vink af en kleur een ster. Donderdag kort, vrijdag vrij (of inhalen). Lukt een dag niet? Schuif gewoon een dag op.', 1)}
+pages.push(`${head('Mijn plan tot de toets', 'Vink af en kleur een ster. Elke dag minimaal 10 minuten. Begin met woorden lezen. 2 × = twee rondjes met pauze.', 1)}
 <table class="plan" style="font-size:11.5pt"><tr><th style="width:24mm">Dag</th><th>Wat ga ik doen?</th><th style="width:16mm">Tijd</th><th style="width:16mm">Klaar</th><th style="width:16mm">Ster</th></tr>
-${P.map(d => `<tr><td><b>${esc(d.day)}</b></td><td><b>${esc(d.title)}</b><br><span style="font-size:9.5pt">${d.tasks.map(t => esc(t.text)).join(' · ')}</span></td><td>${d.test ? 'toets' : d.min ? d.min + ' min' : 'vrij'}</td><td style="text-align:center"><span class="chk"></span></td><td style="text-align:center"><span class="star">★</span></td></tr>`).join('')}
+${P.map(d => `<tr><td><b>${esc(d.day)}</b></td><td><b>${esc(d.title)}</b><br><span style="font-size:9.5pt">${d.tasks.map(t => esc(t.text)).join(' · ')}</span></td><td>${d.test ? 'toets' : d.r2 ? (d.r1 === d.r2 ? '2 × ' + d.r1 : d.r1 + ' + ' + d.r2) + ' min' : d.min + ' min'}</td><td style="text-align:center"><span class="chk"></span></td><td style="text-align:center"><span class="star">★</span></td></tr>`).join('')}
 </table>
 `);
 

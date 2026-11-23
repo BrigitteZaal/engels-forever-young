@@ -163,3 +163,13 @@ canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:70}
 
 a.small{color:var(--ink);font-weight:600;text-decoration:none;border-bottom:2px solid var(--line)}
 @media (max-width:480px){html{--fs:18px} html.big{--fs:21px} .card{padding:16px} .task{flex-wrap:wrap} .q .word{font-size:2rem}}
+
+.rnd{display:flex;align-items:center;gap:10px;margin-top:14px}
+.rnd-l{font-weight:800;font-size:.85rem;background:var(--mustard-soft);border:2px solid var(--mustard);border-radius:999px;padding:2px 10px}
+table.rl{width:100%;border-collapse:collapse}
+table.rl td{padding:8px 6px;border-bottom:2px solid var(--line);vertical-align:middle;font-size:1.15rem}
+table.rl td:first-child{width:52px}
+table.rl td.nl{color:var(--leaf);font-weight:700}
+table.rl td[data-rev]{cursor:pointer}
+table.rl td.cov{background:var(--line);color:transparent;border-radius:8px}
+table.rl td.cov *{color:transparent}
