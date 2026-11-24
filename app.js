@@ -346,22 +346,37 @@ function viewShelf() {
 // ---------- learn (flashcards) ----------
 function viewRead(g, tid) {
   setTab('modes');
-  const ws = wordsFor(g); let hide = '';
+  const ws = wordsFor(g); let hide = '', playing = false, timer = null;
   const grp = L.groups.find(x => x.id === g);
+  const mark = i => { app.querySelectorAll('tr[data-row]').forEach(r => r.classList.toggle('now', +r.dataset.row === i)); const r = app.querySelector(`tr[data-row="${i}"]`); if (r && playing) r.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
+  const sayRow = i => { mark(i); say(ws[i].en); };
+  const stopAll = () => { playing = false; clearTimeout(timer); if (window.speechSynthesis) speechSynthesis.cancel(); };
+  // Engels voorlezen, even denken, dan Nederlands (behalve als het Nederlands is afgedekt), dan het volgende woord
+  const speakThen = (text, lang, next) => { if (!window.speechSynthesis) { timer = setTimeout(next, 1500); return; }
+    const u = new SpeechSynthesisUtterance(text); const v = lang === 'en' ? enVoice() : nlVoice(); if (v) u.voice = v; u.lang = lang === 'en' ? (v ? v.lang : 'en-GB') : 'nl-NL';
+    u.rate = lang === 'en' ? (parseFloat(S.settings.rate) || 0.8) : Math.max(0.9, parseFloat(S.settings.rate) || 0.9); let done = false; const go = () => { if (done) return; done = true; next(); };
+    u.onend = go; u.onerror = go; timer = setTimeout(go, 6000); speechSynthesis.speak(u); };
+  const playFrom = i => { if (!playing) return; if (i >= ws.length) { playing = false; mark(-1); const b = $('#playAll'); if (b) b.textContent = '▶️ Lees alle woorden voor'; return; }
+    mark(i); speechSynthesis && speechSynthesis.cancel();
+    speakThen(ws[i].en, 'en', () => { clearTimeout(timer); if (!playing) return; timer = setTimeout(() => { if (!playing) return;
+      if (hide === 'nl') { timer = setTimeout(() => playFrom(i + 1), 1500); return; }
+      speakThen(ws[i].nl, 'nl', () => { clearTimeout(timer); if (playing) timer = setTimeout(() => playFrom(i + 1), 1200); }); }, 1200); }); };
   const draw = () => {
     app.innerHTML = `<div class="stage"><a href="#modes" class="small">← terug</a>
     <div class="card" style="margin-top:10px"><h1>Lees-lijst${grp ? ': ' + esc(grp.short) : ''}</h1>
-    <div class="coach" style="margin-top:0"><span class="face">📖</span><div><b>Zo lees je de woorden in je hoofd:</b><br>1. Lees elk Engels woord hardop en kijk wat het betekent.<br>2. Dek het Nederlands af en zeg de betekenis. Daarna andersom.<br>3. Weet je er een niet? Tik op het woord. Dan zie je het weer.</div></div>
-    <div class="row" style="margin:12px 0"><button class="speak ${hide === 'nl' ? 'slow' : ''}" id="hNl">${hide === 'nl' ? '👁️ Laat Nederlands zien' : '🙈 Dek Nederlands af'}</button><button class="speak ${hide === 'en' ? 'slow' : ''}" id="hEn">${hide === 'en' ? '👁️ Laat Engels zien' : '🙈 Dek Engels af'}</button></div>
-    <table class="rl">${ws.map((w, i) => `<tr><td><button class="speak" data-say="${i}" aria-label="Hoor ${esc(w.en)}">🔊</button></td><td class="en ${hide === 'en' ? 'cov' : ''}" data-rev><b>${esc(w.en)}</b>${w.syl && w.syl !== w.en ? `<div class="small muted">${esc(w.syl)}</div>` : ''}</td><td class="nl ${hide === 'nl' ? 'cov' : ''}" data-rev>${esc(w.nl)}</td></tr>`).join('')}</table>
+    <div class="coach" style="margin-top:0"><span class="face">📖</span><div><b>Zo lees je de woorden in je hoofd:</b><br>1. Druk op <b>Lees alle woorden voor</b>. Luister, kijk mee en zeg elk woord hardop na.<br>2. Dek het Nederlands af en zeg de betekenis. Daarna andersom.<br>3. Tik op een woord om het nog eens te horen. Is het afgedekt? Dan zie je het weer.</div></div>
+    <div class="row" style="margin:12px 0"><button class="speak ${hide === 'nl' ? 'slow' : ''}" id="hNl">${hide === 'nl' ? '👁️ Laat Nederlands zien' : '🙈 Dek Nederlands af'}</button><button class="speak ${hide === 'en' ? 'slow' : ''}" id="hEn">${hide === 'en' ? '👁️ Laat Engels zien' : '🙈 Dek Engels af'}</button><button class="btn leaf" id="playAll" style="min-height:44px">${playing ? '⏹️ Stop voorlezen' : '▶️ Lees alle woorden voor'}</button></div>
+    <table class="rl">${ws.map((w, i) => `<tr data-row="${i}"><td><button class="speak" data-say="${i}" aria-label="Hoor ${esc(w.en)}">🔊</button></td><td class="en ${hide === 'en' ? 'cov' : ''}" data-rev><b>${esc(w.en)}</b>${w.syl && w.syl !== w.en ? `<div class="small muted">${esc(w.syl)}</div>` : ''}</td><td class="nl ${hide === 'nl' ? 'cov' : ''}" data-rev>${esc(w.nl)}</td></tr>`).join('')}</table>
     <div class="row" style="margin-top:18px"><button class="btn leaf" id="done">Ik heb alles gelezen ✓</button></div></div></div>`;
     $('#hNl').onclick = () => { hide = hide === 'nl' ? '' : 'nl'; draw(); };
     $('#hEn').onclick = () => { hide = hide === 'en' ? '' : 'en'; draw(); };
-    app.querySelectorAll('[data-say]').forEach(b => b.onclick = () => say(ws[+b.dataset.say].en));
-    app.querySelectorAll('[data-rev]').forEach(c => c.onclick = () => c.classList.toggle('cov'));
-    $('#done').onclick = () => finishSimple(ws.length, 'Lees-lijst', tid, '#play/learn/' + g, 'Nu de leer-kaarten?');
+    app.querySelectorAll('[data-say]').forEach(b => b.onclick = () => { stopAll(); sayRow(+b.dataset.say); });
+    app.querySelectorAll('[data-rev]').forEach(c => c.onclick = () => { stopAll(); const i = +c.parentNode.dataset.row; if (c.classList.contains('cov')) c.classList.remove('cov'); if (c.classList.contains('nl')) sayNl(ws[i].nl); else sayRow(i); });
+    $('#playAll').onclick = () => { if (playing) { stopAll(); draw(); } else { playing = true; draw(); playFrom(0); } };
+    $('#done').onclick = () => { stopAll(); finishSimple(ws.length, 'Lees-lijst', tid, '#play/learn/' + g, 'Nu de leer-kaarten?'); };
   };
   draw();
+  window.addEventListener('hashchange', stopAll, { once: true });
 }
 function viewLearn(g, tid) {
   setTab('modes');

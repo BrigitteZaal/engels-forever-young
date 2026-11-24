@@ -173,3 +173,4 @@ table.rl td.nl{color:var(--leaf);font-weight:700}
 table.rl td[data-rev]{cursor:pointer}
 table.rl td.cov{background:var(--line);color:transparent;border-radius:8px}
 table.rl td.cov *{color:transparent}
+table.rl tr.now td{background:var(--mustard-soft)}
